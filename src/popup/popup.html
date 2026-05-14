@@ -1,44 +1,248 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <style>
-        body {
-            width: 200px;
-            padding: 16px;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #ffffff;
-            color: #333;
-        }
-        h2 {
-            font-size: 16px;
-            margin-top: 0;
-            color: #4a9eff;
-        }
-        p {
-            font-size: 12px;
-            line-height: 1.4;
-        }
-        .status {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 12px;
-            font-weight: 600;
-        }
-        .status-dot {
-            width: 8px;
-            height: 8px;
-            background: #4caf50;
-            border-radius: 50%;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ScrollToPrompt</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+
+body{
+  width:320px;font-family:'Inter',system-ui,sans-serif;
+  background:#0e0e18;color:#d4d4e0;
+  overflow-x:hidden;
+}
+
+/* ── Header ── */
+.hdr{
+  padding:20px 22px 14px;
+  background:linear-gradient(135deg,rgba(108,140,255,.08),rgba(167,139,250,.06));
+  border-bottom:1px solid rgba(255,255,255,.04);
+}
+.hdr-row{display:flex;align-items:center;gap:10px;margin-bottom:5px}
+.hdr-icon{
+  width:26px;height:26px;border-radius:7px;
+  background:linear-gradient(135deg,#6C8CFF,#A78BFA);
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:800;color:#fff;
+  box-shadow:0 2px 8px rgba(108,140,255,.25);
+}
+.hdr-title{
+  font-size:15px;font-weight:700;
+  background:linear-gradient(135deg,#818CF8,#C084FC);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+.hdr-sub{font-size:10px;color:rgba(200,200,220,.35);letter-spacing:.3px}
+
+/* ── Section ── */
+.sec{padding:14px 22px}
+.sec+.sec{border-top:1px solid rgba(255,255,255,.03)}
+.sec-title{
+  font-size:9px;text-transform:uppercase;letter-spacing:.9px;
+  color:rgba(200,200,220,.3);font-weight:700;margin-bottom:10px;
+}
+
+/* ── Status card ── */
+.status{
+  background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.05);
+  border-radius:10px;padding:12px 14px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.status-left{display:flex;align-items:center;gap:10px}
+.dot{
+  width:8px;height:8px;border-radius:50%;
+  background:#4ade80;box-shadow:0 0 6px rgba(74,222,128,.35);
+  transition:all .3s;
+}
+.dot.off{background:#4b5563;box-shadow:none}
+.status-lbl{font-size:12px;font-weight:600}
+.status-sub{font-size:9px;color:rgba(200,200,220,.35);margin-top:1px}
+
+/* ── Toggle ── */
+.tgl{position:relative;width:40px;height:22px;cursor:pointer;flex-shrink:0}
+.tgl input{display:none}
+.tgl-bg{
+  position:absolute;inset:0;border-radius:11px;
+  background:rgba(255,255,255,.1);transition:background .3s;
+}
+.tgl input:checked+.tgl-bg{background:linear-gradient(135deg,#6C8CFF,#A78BFA)}
+.tgl-knob{
+  position:absolute;top:3px;left:3px;width:16px;height:16px;
+  border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.2);
+  transition:transform .25s cubic-bezier(.4,0,.2,1);
+}
+.tgl input:checked~.tgl-knob{transform:translateX(18px)}
+
+/* ── Setting row ── */
+.row{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:8px 0;gap:12px;
+}
+.row-lbl{font-size:11px;color:rgba(200,200,220,.7);flex:1}
+.row-val{
+  font-size:10px;color:rgba(200,200,220,.35);min-width:28px;text-align:right;
+  font-variant-numeric:tabular-nums;
+}
+
+/* ── Range slider ── */
+.rng{
+  -webkit-appearance:none;width:90px;height:4px;
+  border-radius:2px;outline:none;cursor:pointer;
+  background:linear-gradient(90deg,rgba(108,140,255,.3),rgba(167,139,250,.3));
+}
+.rng::-webkit-slider-thumb{
+  -webkit-appearance:none;width:14px;height:14px;
+  border-radius:50%;border:none;cursor:pointer;
+  background:linear-gradient(135deg,#818CF8,#C084FC);
+  box-shadow:0 1px 6px rgba(129,140,248,.35);
+}
+
+/* ── Color input ── */
+.color-wrap{display:flex;align-items:center;gap:8px}
+.color-in{
+  -webkit-appearance:none;width:28px;height:28px;border:none;padding:0;
+  border-radius:6px;cursor:pointer;background:transparent;
+}
+.color-in::-webkit-color-swatch-wrapper{padding:0}
+.color-in::-webkit-color-swatch{border:2px solid rgba(255,255,255,.1);border-radius:6px}
+.color-hex{font-size:10px;color:rgba(200,200,220,.4);font-family:'Inter',monospace}
+
+/* ── Select ── */
+.sel{
+  background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);
+  color:#d4d4e0;font-size:11px;padding:4px 8px;
+  border-radius:6px;outline:none;cursor:pointer;
+  font-family:'Inter',sans-serif;
+}
+.sel option{background:#1a1a2e;color:#d4d4e0}
+
+/* ── Stats ── */
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.stat{
+  background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.04);
+  border-radius:8px;padding:10px;text-align:center;
+}
+.stat-val{
+  font-size:18px;font-weight:800;
+  background:linear-gradient(135deg,#818CF8,#C084FC);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+.stat-lbl{font-size:8px;text-transform:uppercase;letter-spacing:.7px;color:rgba(200,200,220,.3);margin-top:2px;font-weight:600}
+
+/* ── Platform chips ── */
+.chips{display:flex;gap:5px;flex-wrap:wrap;margin-top:10px}
+.chip{
+  font-size:8px;font-weight:600;letter-spacing:.3px;
+  padding:3px 9px;border-radius:20px;
+  background:rgba(108,140,255,.07);border:1px solid rgba(108,140,255,.1);
+  color:rgba(180,190,230,.5);
+}
+.chip.on{background:rgba(108,140,255,.15);border-color:rgba(108,140,255,.3);color:#A78BFA}
+
+/* ── Shortcuts ── */
+.sc-row{display:flex;align-items:center;justify-content:space-between;padding:5px 0}
+.sc-lbl{font-size:10px;color:rgba(200,200,220,.45)}
+.kbd{display:inline-flex;gap:2px}
+.kbd span{
+  font-size:9px;font-weight:600;color:rgba(200,200,220,.5);
+  background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);
+  border-radius:3px;padding:1px 5px;
+}
+
+/* ── Footer ── */
+.ftr{
+  padding:10px 22px;border-top:1px solid rgba(255,255,255,.03);
+  text-align:center;
+}
+.ftr-txt{font-size:8px;color:rgba(200,200,220,.18);letter-spacing:.4px}
+</style>
 </head>
 <body>
-    <h2>ScrollToPrompt</h2>
-    <p>Visual markers for your prompts in AI chats.</p>
-    <div class="status">
-        <div class="status-dot"></div>
-        <span>Active</span>
+
+<div class="hdr">
+  <div class="hdr-row">
+    <div class="hdr-icon">S</div>
+    <div class="hdr-title">ScrollToPrompt</div>
+  </div>
+  <div class="hdr-sub">Intelligent scrollbar for AI chats</div>
+</div>
+
+<!-- Status -->
+<div class="sec">
+  <div class="status">
+    <div class="status-left">
+      <div class="dot" id="dot"></div>
+      <div>
+        <div class="status-lbl" id="statusLbl">Active</div>
+        <div class="status-sub" id="platformLbl">Detecting…</div>
+      </div>
     </div>
+    <label class="tgl"><input type="checkbox" id="enabled" checked><div class="tgl-bg"></div><div class="tgl-knob"></div></label>
+  </div>
+  <div class="stats">
+    <div class="stat"><div class="stat-val" id="promptCount">—</div><div class="stat-lbl">Prompts</div></div>
+    <div class="stat"><div class="stat-val" id="platformName">—</div><div class="stat-lbl">Platform</div></div>
+  </div>
+  <div class="chips" id="chips">
+    <div class="chip" data-p="chatgpt">ChatGPT</div>
+    <div class="chip" data-p="claude">Claude</div>
+    <div class="chip" data-p="gemini">Gemini</div>
+    <div class="chip" data-p="perplexity">Perplexity</div>
+    <div class="chip" data-p="grok">Grok</div>
+  </div>
+</div>
+
+<!-- Appearance -->
+<div class="sec">
+  <div class="sec-title">Appearance</div>
+  <div class="row">
+    <span class="row-lbl">Marker color</span>
+    <div class="color-wrap">
+      <span class="color-hex" id="colorHex">#a78bfa</span>
+      <input type="color" class="color-in" id="markerColor" value="#a78bfa">
+    </div>
+  </div>
+  <div class="row">
+    <span class="row-lbl">Marker opacity</span>
+    <input type="range" class="rng" id="markerOpacity" min="0.1" max="0.9" step="0.05" value="0.45">
+    <span class="row-val" id="opacityVal">45%</span>
+  </div>
+  <div class="row">
+    <span class="row-lbl">Scrollbar width</span>
+    <input type="range" class="rng" id="scrollbarWidth" min="4" max="16" step="1" value="8">
+    <span class="row-val" id="widthVal">8px</span>
+  </div>
+  <div class="row">
+    <span class="row-lbl">Side</span>
+    <select class="sel" id="side">
+      <option value="right">Right</option>
+      <option value="left">Left</option>
+    </select>
+  </div>
+</div>
+
+<!-- Behavior -->
+<div class="sec">
+  <div class="sec-title">Behavior</div>
+  <div class="row">
+    <span class="row-lbl">Auto-hide</span>
+    <label class="tgl"><input type="checkbox" id="autoHide" checked><div class="tgl-bg"></div><div class="tgl-knob"></div></label>
+  </div>
+  <div class="row">
+    <span class="row-lbl">Animations</span>
+    <label class="tgl"><input type="checkbox" id="animations" checked><div class="tgl-bg"></div><div class="tgl-knob"></div></label>
+  </div>
+  <div class="row">
+    <span class="row-lbl">Theme sync</span>
+    <label class="tgl"><input type="checkbox" id="themeSync" checked><div class="tgl-bg"></div><div class="tgl-knob"></div></label>
+  </div>
+</div>
+
+<div class="ftr">
+  <div class="ftr-txt">v1.0.0 · ChatGPT · Claude · Gemini · Perplexity · Grok</div>
+</div>
+
+<script type="module" src="./popup.ts"></script>
 </body>
 </html>

@@ -2,36 +2,34 @@
   "manifest_version": 3,
   "name": "ScrollToPrompt",
   "version": "1.0.0",
-  "description": "Navigate your AI chat prompts with visual scrollbar markers — works on ChatGPT, Claude, and Gemini.",
-  "permissions": ["storage", "activeTab"],
+  "description": "Visualize your prompt locations on the scrollbar for AI chat platforms.",
+  "permissions": ["storage"],
   "content_scripts": [
     {
       "matches": [
         "https://chatgpt.com/*",
         "https://chat.openai.com/*",
         "https://claude.ai/*",
-        "https://gemini.google.com/*"
+        "https://gemini.google.com/*",
+        "https://www.perplexity.ai/*",
+        "https://perplexity.ai/*",
+        "https://grok.com/*",
+        "https://x.com/i/grok*"
       ],
-      "js": ["content/main.js"],
-      "css": [],
+      "js": ["src/content/main.ts"],
       "run_at": "document_idle"
     }
   ],
   "background": {
-    "service_worker": "background/service-worker.js",
+    "service_worker": "src/background/index.ts",
     "type": "module"
   },
   "action": {
-    "default_popup": "popup/popup.html",
-    "default_icon": {
-      "16": "icons/icon-16.png",
-      "48": "icons/icon-48.png",
-      "128": "icons/icon-128.png"
-    }
+    "default_popup": "src/popup/popup.html"
   },
   "icons": {
-    "16": "icons/icon-16.png",
-    "48": "icons/icon-48.png",
-    "128": "icons/icon-128.png"
+    "16": "assets/icons/icon-16.png",
+    "48": "assets/icons/icon-48.png",
+    "128": "assets/icons/icon-128.png"
   }
 }

@@ -1,45 +1,47 @@
-# Architecture Guide
+# Architecture Guide: ScrollToPrompt
 
 This document describes the architectural patterns and design decisions behind **ScrollToPrompt**.
 
 ## Core Philosophy
-The extension is designed to be **unobtrusive, performant, and modular**. We prioritize a "zero-coupling" approach where the core engine doesn't need to know the details of the page it's running on.
+The extension is designed to be **an evolution of the native scrollbar**. We prioritize an unobtrusive, elegant, and intelligent enhancement over a bulky minimap.
 
 ## 🧱 Component Architecture
 
-### 1. The Engine (`src/core/Engine.ts`)
-The `ScrollToPromptEngine` is the orchestrator. Its responsibilities include:
-- **Initialization**: Bootstrapping the extension for a specific platform.
-- **Observation**: Monitoring the DOM for changes using `MutationObserver`.
-- **Coordination**: Fetching prompts from the adapter and passing them to the UI layer.
+### 1. MarkerUI (`src/components/MarkerUI.ts`)
+This is the core renderer class.
+- **Shadow DOM Isolation**: The entire custom scrollbar UI is encased in an isolated Shadow DOM to avoid CSS conflicts with the host website.
+- **Native Scrolling Masking**: Hides the native scrollbar with dynamically injected CSS rules matching the specific container (`scrollbar-width: none`, `::-webkit-scrollbar { display: none }`).
+- **Drag & Click Math**: Custom JS mimics native dragging and track-clicking accurately.
+- **Marker Compression**: If there are hundreds of prompts (e.g., long chat), markers compress visually and merge into density bars so they never overlap awkwardly or crash the DOM.
+- **Auto-Hide & Edge Zones**: Uses native-feeling hover detection and edge-zone detection (within 40px of screen edge) to gracefully fade in and out.
+- **Hover Transitions**: Changes dimensions and opacity of track and markers contextually based on user interactions.
 
-### 2. Site Adapters (`src/adapters/`)
-We use the **Adapter Pattern** to abstract site-specific DOM logic. Each adapter implements the `SiteAdapter` interface:
-```typescript
-interface SiteAdapter {
-  platform: string;
-  getPrompts(): HTMLElement[];
-  getScrollContainer(): HTMLElement;
-}
-```
-This allows us to add support for new sites (e.g., Poe, Perplexity) by creating a new adapter without touching the core engine logic.
+### 2. The Engine (`src/core/Engine.ts`)
+The `Engine` manages the extension lifecycle:
+- **Initialization**: Automatically polling until the chat container hydrates, then initializing the custom scrollbar on it.
+- **Observation**: Monitors the DOM (`MutationObserver`) for newly added messages or prompt streaming.
+- **Routing**: `MutationObserver` specifically for single-page app (SPA) navigations, destroying and recreating the scrollbar when changing chats.
 
-### 3. UI Component (`src/components/MarkerUI.ts`)
-To prevent the host page's CSS from breaking our markers (and vice versa), we use **Shadow DOM**.
-- **Isolation**: All styles are encapsulated within the shadow root.
-- **Efficiency**: The UI component minimizes layout thrashing by updating markers in a batch.
+### 3. Site Adapters (`src/adapters/Platforms.ts`)
+Implemented as static classes implementing the `SiteAdapter` interface:
+- Exposes `getPrompts()` returning an array of DOM elements representing the user's input.
+- Exposes `getScrollContainer()` returning the scrollable view (handling quirks across multiple frameworks).
+- Supports: ChatGPT, Claude, Gemini, Perplexity, and Grok.
 
-## 🔄 Data Flow
-1. **Bootstrap**: `main.ts` detects the host and instantiates the correct `SiteAdapter`.
-2. **Detection**: `Engine` calls `adapter.getPrompts()` to find all user messages.
-3. **Mapping**: `Engine` calculates the vertical percentage of each prompt relative to the total scroll height.
-4. **Rendering**: `MarkerUI` renders the markers as absolute-positioned elements on the track.
+### 4. Background Service Worker (`src/background/index.ts`)
+- Handles global state broadcast and installation lifecycles.
+- Re-broadcasts settings changes across all active tabs using `chrome.tabs.sendMessage`.
 
-## 🛠 Engineering Practices
-- **TypeScript**: Ensuring type safety across the board.
-- **Vite + CRXJS**: Modern build pipeline for fast HMR and optimized production bundles.
-- **Shadow DOM**: Strong encapsulation for the UI layer.
-- **MutationObserver**: Event-driven UI updates instead of expensive polling.
+### 5. Settings Popup (`src/popup/`)
+- **UI System**: Premium, dark-themed, glassmorphism-inspired UI with CSS-only toggle switches, range sliders, and dynamic chips.
+- **Communication**: Queries active tabs to fetch live statistics on the number of prompts in the current conversation.
+- **Sync**: Automatically persists user preferences via `chrome.storage.sync` which hot-reloads within the content scripts.
 
-## 🚀 Scaling Strategy
-As we add more platforms, the `adapters` directory will grow, but the core engine will remain lightweight. In the future, a **Plugin System** could allow users to define their own detectors for unsupported sites.
+## 🛠 Engineering Decisions
+- **TypeScript & Vite**: Strict typing for robustness and Vite/CRXJS for a fast, modern build pipeline producing a Manifest V3 extension.
+- **Debounced Rendering**: Layout thrashing is eliminated by debouncing DOM scans to 120ms intervals.
+- **`requestAnimationFrame`**: Dragging and scrolling use `rAF` to guarantee smooth, 60fps movement.
+- **Reduced Motion Support**: Listens to `@media (prefers-reduced-motion: reduce)` to disable transitions for accessibility.
+
+## 🚀 Scalability
+Adding a new AI platform takes ~20 lines of code by adding a new adapter class in `Platforms.ts` and wiring it into `main.ts`.
