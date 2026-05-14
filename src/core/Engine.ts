@@ -1,4 +1,5 @@
 import { MarkerUI } from '../components/MarkerUI';
+import { Logger } from '../utils/Logger';
 
 export interface SiteAdapter {
   platform: string;
@@ -21,15 +22,17 @@ export class ScrollToPromptEngine {
 
   constructor(adapter: SiteAdapter) {
     this.adapter = adapter;
+    Logger.debug('Engine constructed for adapter:', adapter.platform);
   }
 
   public init() {
-    console.log(`[ScrollToPrompt] Active on ${this.adapter.platform}`);
+    Logger.info(`[ScrollToPrompt] Active on ${this.adapter.platform}`);
     this._findContainerAndInit();
 
     // Listen for messages from popup
     if (typeof chrome !== 'undefined' && chrome.runtime) {
       chrome.runtime.onMessage.addListener((msg, _, sendResponse) => {
+        Logger.debug('Received message in Engine:', msg);
         if (msg.type === 'stp-toggle') {
           if (this.ui) this.ui.toggle(msg.enabled);
         }
@@ -45,16 +48,21 @@ export class ScrollToPromptEngine {
   private _findContainerAndInit() {
     const ct = this.adapter.getScrollContainer();
     if (ct) {
+      Logger.debug('Scroll container found', ct);
       this._initScrollbar(ct);
     } else {
       this._containerAttempts++;
+      Logger.debug(`Scroll container not found, attempt ${this._containerAttempts}`);
       if (this._containerAttempts < 20) {
         setTimeout(() => this._findContainerAndInit(), 500);
+      } else {
+        Logger.error('Failed to find scroll container after 20 attempts.');
       }
     }
   }
 
   private _initScrollbar(container: HTMLElement) {
+    Logger.info('Initializing MarkerUI for scrollbar overlay');
     if (this.ui) this.ui.destroy();
     
     // We will initialize the MarkerUI with the target container
@@ -74,6 +82,7 @@ export class ScrollToPromptEngine {
     const prompts = this.adapter.getPrompts();
     
     if (!prompts.length) {
+      Logger.debug('No prompts found during scan');
       this.ui.updateMarkers([]);
       return;
     }
@@ -88,6 +97,7 @@ export class ScrollToPromptEngine {
       return Math.min(Math.max(absTop / scrollH, 0), 1);
     });
 
+    Logger.debug(`Scan complete. Found ${prompts.length} prompts. Updating markers...`, ratios);
     this.ui.updateMarkers(ratios);
   }
 
@@ -98,13 +108,18 @@ export class ScrollToPromptEngine {
 
   private _startObserving(container: HTMLElement) {
     if (this._observer) this._observer.disconnect();
-    this._observer = new MutationObserver(() => this._debouncedScan());
+    this._observer = new MutationObserver((mutations) => {
+      // Logger.debug('DOM Mutation detected', mutations.length); // Excluded to avoid spam
+      this._debouncedScan();
+    });
     this._observer.observe(container, { childList: true, subtree: true });
+    Logger.debug('Started observing DOM mutations on container');
   }
 
   private _watchNavigation() {
     const check = () => {
       if (location.href !== this._lastUrl) {
+        Logger.info(`URL changed from ${this._lastUrl} to ${location.href}. Re-initializing...`);
         this._lastUrl = location.href;
         this._containerAttempts = 0;
         setTimeout(() => {

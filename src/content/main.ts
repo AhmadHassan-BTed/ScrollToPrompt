@@ -1,9 +1,13 @@
 import { ScrollToPromptEngine } from '../core/Engine';
 import { ChatGPTAdapter, ClaudeAdapter, GeminiAdapter, PerplexityAdapter, GrokAdapter } from '../adapters/Platforms';
+import { Logger } from '../utils/Logger';
 
 function bootstrap() {
   if ((window as any).__STP_LOADED__) return;
   (window as any).__STP_LOADED__ = true;
+
+  Logger.setupGlobalAccess();
+  Logger.info('Bootstrapping ScrollToPrompt extension');
 
   const host = window.location.hostname;
   let adapter;
@@ -21,10 +25,11 @@ function bootstrap() {
   }
 
   if (adapter) {
+    Logger.info('Adapter instantiated:', adapter.platform);
     const engine = new ScrollToPromptEngine(adapter);
     engine.init();
   } else {
-    console.log('[ScrollToPrompt] No supported platform detected.');
+    Logger.warn('No supported platform detected.');
   }
 }
 

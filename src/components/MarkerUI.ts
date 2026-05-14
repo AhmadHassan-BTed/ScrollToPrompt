@@ -1,3 +1,5 @@
+import { Logger } from '../utils/Logger';
+
 export class MarkerUI {
   private container: HTMLElement;
   private host!: HTMLElement;
@@ -36,42 +38,45 @@ export class MarkerUI {
   private boundOnStorageChange!: (changes: { [key: string]: chrome.storage.StorageChange }) => void;
 
   constructor(container: HTMLElement) {
+    Logger.debug('Initializing MarkerUI for container', container);
     this.container = container;
+
+    // IMPORTANT: Build the DOM synchronously so updateMarkers() doesn't fail
+    // if called before the async storage.sync returns!
+    this.buildDOM();
+    this.hideNativeScrollbar();
+    this.updateGeometry();
+    this.updateThumb();
+    this.show();
 
     // Load settings from storage
     if (typeof chrome !== 'undefined' && chrome.storage) {
+      Logger.debug('Fetching settings from chrome.storage.sync');
       chrome.storage.sync.get(this.cfg, (data) => {
+        Logger.info('Settings loaded', data);
         this.cfg = { ...this.cfg, ...data };
-        this.buildDOM();
-        this.hideNativeScrollbar();
-        this.bindEvents();
-        this.updateGeometry();
-        this.updateThumb();
-        this.show();
+        this.rebuild();
       });
 
       this.boundOnStorageChange = (changes) => {
-        let changed = false;
+        Logger.debug('Settings changed', changes);
+        let changedFlag = false;
         for (const [k, { newValue }] of Object.entries(changes)) {
           if (k in this.cfg) {
             (this.cfg as any)[k] = newValue;
-            changed = true;
+            changedFlag = true;
           }
         }
-        if (changed) {
+        if (changedFlag) {
           this.rebuild();
         }
       };
       chrome.storage.onChanged.addListener(this.boundOnStorageChange);
     } else {
-      // Fallback if not in extension context
-      this.buildDOM();
-      this.hideNativeScrollbar();
-      this.bindEvents();
-      this.updateGeometry();
-      this.updateThumb();
-      this.show();
+      Logger.warn('chrome.storage API not available');
     }
+
+    this.bindEvents();
 
     this.boundOnScroll = () => { this.scheduleFrame(); this.show(); };
     this.boundOnMouseMove = (e) => {
@@ -81,7 +86,10 @@ export class MarkerUI {
       const near = this.cfg.side === 'right' ? fromRight < 40 : fromLeft < 40;
       if (near && !this.isHovering) this.show();
     };
-    this.boundOnThemeChange = () => this.rebuild();
+    this.boundOnThemeChange = () => {
+      Logger.debug('Theme changed detected from media query');
+      this.rebuild();
+    };
     this.mql = window.matchMedia('(prefers-color-scheme: dark)');
   }
 
