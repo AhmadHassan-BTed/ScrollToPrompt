@@ -40,6 +40,9 @@ export class MarkerUI {
   constructor(container: HTMLElement) {
     Logger.debug('Initializing MarkerUI for container', container);
     this.container = container;
+    
+    // Initialize mql before buildDOM so isDarkTheme works
+    this.mql = window.matchMedia('(prefers-color-scheme: dark)');
 
     // IMPORTANT: Build the DOM synchronously so updateMarkers() doesn't fail
     // if called before the async storage.sync returns!
@@ -90,7 +93,6 @@ export class MarkerUI {
       Logger.debug('Theme changed detected from media query');
       this.rebuild();
     };
-    this.mql = window.matchMedia('(prefers-color-scheme: dark)');
   }
 
   private isDarkTheme() {
