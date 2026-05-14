@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ScrollToPrompt</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      width: 300px;
+      min-height: 200px;
+      font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: linear-gradient(145deg, #0f0f1a 0%, #1a1a2e 40%, #16213e 100%);
+      color: #e0e0f0;
+      padding: 0;
+      overflow: hidden;
+    }
+
+    /* ── Header ── */
+    .header {
+      padding: 20px 20px 16px;
+      background: linear-gradient(135deg, rgba(108,140,255,0.12) 0%, rgba(167,139,250,0.08) 100%);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .logo-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 6px;
+    }
+    .logo-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #6C8CFF 0%, #A78BFA 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 800;
+      color: white;
+      box-shadow: 0 2px 8px rgba(108,140,255,0.3);
+    }
+    .logo-text {
+      font-size: 16px;
+      font-weight: 700;
+      background: linear-gradient(135deg, #818CF8, #C084FC);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .tagline {
+      font-size: 11px;
+      color: rgba(200,200,220,0.5);
+      letter-spacing: 0.3px;
+    }
+
+    /* ── Status Section ── */
+    .section {
+      padding: 16px 20px;
+    }
+
+    .status-card {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 12px;
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .status-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .status-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #4ade80;
+      box-shadow: 0 0 8px rgba(74,222,128,0.4);
+      transition: all 0.3s ease;
+    }
+    .status-dot.off {
+      background: #6b7280;
+      box-shadow: none;
+    }
+
+    .status-label {
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .status-label .sub {
+      font-size: 10px;
+      font-weight: 400;
+      color: rgba(200,200,220,0.4);
+      display: block;
+      margin-top: 2px;
+    }
+
+    /* Toggle switch */
+    .toggle {
+      position: relative;
+      width: 44px;
+      height: 24px;
+      cursor: pointer;
+    }
+    .toggle input {
+      display: none;
+    }
+    .toggle-track {
+      position: absolute;
+      inset: 0;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.1);
+      transition: background 0.3s ease;
+    }
+    .toggle input:checked + .toggle-track {
+      background: linear-gradient(135deg, #6C8CFF 0%, #A78BFA 100%);
+    }
+    .toggle-knob {
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: white;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+      transition: transform 0.3s cubic-bezier(.4,0,.2,1);
+    }
+    .toggle input:checked ~ .toggle-knob {
+      transform: translateX(20px);
+    }
+
+    /* ── Info Cards ── */
+    .info-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 12px;
+    }
+    .info-card {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.05);
+      border-radius: 10px;
+      padding: 12px;
+      text-align: center;
+    }
+    .info-value {
+      font-size: 20px;
+      font-weight: 800;
+      background: linear-gradient(135deg, #818CF8, #C084FC);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .info-label {
+      font-size: 9px;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: rgba(200,200,220,0.4);
+      margin-top: 4px;
+      font-weight: 600;
+    }
+
+    /* ── Keyboard Shortcuts ── */
+    .shortcuts {
+      padding: 0 20px 16px;
+    }
+    .shortcuts-title {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: rgba(200,200,220,0.35);
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    .shortcut-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 0;
+    }
+    .shortcut-label {
+      font-size: 11px;
+      color: rgba(200,200,220,0.6);
+    }
+    .kbd {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      font-size: 10px;
+      font-weight: 600;
+      color: rgba(200,200,220,0.7);
+    }
+    .kbd span {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 4px;
+      padding: 2px 6px;
+      font-family: 'Inter', monospace;
+    }
+
+    /* ── Footer ── */
+    .footer {
+      padding: 12px 20px;
+      border-top: 1px solid rgba(255,255,255,0.04);
+      text-align: center;
+    }
+    .footer-text {
+      font-size: 9px;
+      color: rgba(200,200,220,0.25);
+      letter-spacing: 0.5px;
+    }
+
+    /* ── Platform chips ── */
+    .platforms {
+      display: flex;
+      gap: 6px;
+      margin-top: 12px;
+      flex-wrap: wrap;
+    }
+    .chip {
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 0.4px;
+      padding: 4px 10px;
+      border-radius: 20px;
+      background: rgba(108,140,255,0.1);
+      border: 1px solid rgba(108,140,255,0.15);
+      color: rgba(180,190,230,0.7);
+    }
+    .chip.active {
+      background: rgba(108,140,255,0.2);
+      border-color: rgba(108,140,255,0.35);
+      color: #A78BFA;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="logo-row">
+      <div class="logo-icon">S</div>
+      <div class="logo-text">ScrollToPrompt</div>
+    </div>
+    <div class="tagline">Navigate your prompts instantly</div>
+  </div>
+
+  <div class="section">
+    <div class="status-card">
+      <div class="status-left">
+        <div class="status-dot" id="statusDot"></div>
+        <div class="status-label">
+          <span id="statusText">Active</span>
+          <span class="sub" id="platformText">Detecting platform…</span>
+        </div>
+      </div>
+      <label class="toggle">
+        <input type="checkbox" id="enableToggle" checked>
+        <div class="toggle-track"></div>
+        <div class="toggle-knob"></div>
+      </label>
+    </div>
+
+    <div class="info-grid">
+      <div class="info-card">
+        <div class="info-value" id="promptCount">—</div>
+        <div class="info-label">Prompts found</div>
+      </div>
+      <div class="info-card">
+        <div class="info-value" id="markerCount">—</div>
+        <div class="info-label">Markers active</div>
+      </div>
+    </div>
+
+    <div class="platforms" id="platforms">
+      <div class="chip" data-platform="chatgpt">ChatGPT</div>
+      <div class="chip" data-platform="claude">Claude</div>
+      <div class="chip" data-platform="gemini">Gemini</div>
+    </div>
+  </div>
+
+  <div class="shortcuts">
+    <div class="shortcuts-title">Keyboard Shortcuts</div>
+    <div class="shortcut-row">
+      <span class="shortcut-label">Previous prompt</span>
+      <div class="kbd"><span>Alt</span><span>↑</span></div>
+    </div>
+    <div class="shortcut-row">
+      <span class="shortcut-label">Next prompt</span>
+      <div class="kbd"><span>Alt</span><span>↓</span></div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <div class="footer-text">v1.0.0 — works on ChatGPT · Claude · Gemini</div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

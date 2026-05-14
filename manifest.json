@@ -2,29 +2,36 @@
   "manifest_version": 3,
   "name": "ScrollToPrompt",
   "version": "1.0.0",
-  "description": "Visualize your prompt locations on the scrollbar for ChatGPT, Claude, and Gemini.",
-  "permissions": ["storage"],
+  "description": "Navigate your AI chat prompts with visual scrollbar markers — works on ChatGPT, Claude, and Gemini.",
+  "permissions": ["storage", "activeTab"],
   "content_scripts": [
     {
       "matches": [
         "https://chatgpt.com/*",
+        "https://chat.openai.com/*",
         "https://claude.ai/*",
         "https://gemini.google.com/*"
       ],
-      "js": ["src/content/main.ts"],
+      "js": ["content/main.js"],
+      "css": [],
       "run_at": "document_idle"
     }
   ],
   "background": {
-    "service_worker": "src/background/index.ts",
+    "service_worker": "background/service-worker.js",
     "type": "module"
   },
   "action": {
-    "default_popup": "src/popup/popup.html"
+    "default_popup": "popup/popup.html",
+    "default_icon": {
+      "16": "icons/icon-16.png",
+      "48": "icons/icon-48.png",
+      "128": "icons/icon-128.png"
+    }
   },
   "icons": {
-    "16": "assets/icons/icon-16.png",
-    "48": "assets/icons/icon-48.png",
-    "128": "assets/icons/icon-128.png"
+    "16": "icons/icon-16.png",
+    "48": "icons/icon-48.png",
+    "128": "icons/icon-128.png"
   }
 }
