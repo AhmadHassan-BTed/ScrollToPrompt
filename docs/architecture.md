@@ -1,32 +1,45 @@
-# Architecture Overview
+# Architecture Guide
 
-ScrollToPrompt is built as a lightweight browser extension using Manifest V3. The goal is to provide a seamless navigation experience without impacting the performance of the AI chat interfaces.
+This document describes the architectural patterns and design decisions behind **ScrollToPrompt**.
 
-## Core Components
+## Core Philosophy
+The extension is designed to be **unobtrusive, performant, and modular**. We prioritize a "zero-coupling" approach where the core engine doesn't need to know the details of the page it's running on.
 
-### 1. Content Script (`src/content/`)
-The content script is the heart of the extension. It runs in the context of the supported chat pages.
+## 🧱 Component Architecture
 
-- **Detector Engine**: Uses site-specific CSS selectors to identify user prompts.
-- **Marker UI**: A custom overlay injected into the page that mirrors the scrollbar.
-- **Scroll Sync**: Keeps markers positioned correctly relative to the scrollable container.
+### 1. The Engine (`src/core/Engine.ts`)
+The `ScrollToPromptEngine` is the orchestrator. Its responsibilities include:
+- **Initialization**: Bootstrapping the extension for a specific platform.
+- **Observation**: Monitoring the DOM for changes using `MutationObserver`.
+- **Coordination**: Fetching prompts from the adapter and passing them to the UI layer.
 
-### 2. Site Configurations
-Site-specific logic is decoupled from the main engine. This allows adding support for new platforms (e.g., Poe, Perplexity) by simply adding a new configuration object.
+### 2. Site Adapters (`src/adapters/`)
+We use the **Adapter Pattern** to abstract site-specific DOM logic. Each adapter implements the `SiteAdapter` interface:
+```typescript
+interface SiteAdapter {
+  platform: string;
+  getPrompts(): HTMLElement[];
+  getScrollContainer(): HTMLElement;
+}
+```
+This allows us to add support for new sites (e.g., Poe, Perplexity) by creating a new adapter without touching the core engine logic.
 
-### 3. Messaging (Future)
-For cross-tab synchronization or settings persistence, a background script will be introduced to handle `chrome.storage` updates.
+### 3. UI Component (`src/components/MarkerUI.ts`)
+To prevent the host page's CSS from breaking our markers (and vice versa), we use **Shadow DOM**.
+- **Isolation**: All styles are encapsulated within the shadow root.
+- **Efficiency**: The UI component minimizes layout thrashing by updating markers in a batch.
 
-## Design Decisions
+## 🔄 Data Flow
+1. **Bootstrap**: `main.ts` detects the host and instantiates the correct `SiteAdapter`.
+2. **Detection**: `Engine` calls `adapter.getPrompts()` to find all user messages.
+3. **Mapping**: `Engine` calculates the vertical percentage of each prompt relative to the total scroll height.
+4. **Rendering**: `MarkerUI` renders the markers as absolute-positioned elements on the track.
 
-- **Zero Dependencies**: To ensure maximum compatibility and speed, the extension uses vanilla JavaScript and CSS.
-- **MutationObserver**: Instead of polling, the extension uses `MutationObserver` to respond to DOM changes (new messages, page transitions) efficiently.
-- **Shadow DOM (Planned)**: To prevent site styles from leaking into the marker bar, we plan to use Shadow DOM for the UI components.
+## 🛠 Engineering Practices
+- **TypeScript**: Ensuring type safety across the board.
+- **Vite + CRXJS**: Modern build pipeline for fast HMR and optimized production bundles.
+- **Shadow DOM**: Strong encapsulation for the UI layer.
+- **MutationObserver**: Event-driven UI updates instead of expensive polling.
 
-## Data Flow
-
-1. Page Load -> Initialize `ScrollToPrompt` class.
-2. Detect Platform -> Load site-specific selectors.
-3. Observe DOM -> Scan for prompts.
-4. Render Markers -> Map prompt vertical positions to the marker bar.
-5. Click Event -> Trigger `scrollIntoView` for the target element.
+## 🚀 Scaling Strategy
+As we add more platforms, the `adapters` directory will grow, but the core engine will remain lightweight. In the future, a **Plugin System** could allow users to define their own detectors for unsupported sites.

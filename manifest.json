@@ -11,16 +11,20 @@
         "https://claude.ai/*",
         "https://gemini.google.com/*"
       ],
-      "js": ["src/content/index.js"],
-      "css": ["src/content/styles.css"],
+      "js": ["src/content/main.ts"],
       "run_at": "document_idle"
     }
   ],
-  "icons": {
-    "48": "icons/icon48.png",
-    "128": "icons/icon128.png"
+  "background": {
+    "service_worker": "src/background/index.ts",
+    "type": "module"
   },
   "action": {
     "default_popup": "src/popup/popup.html"
+  },
+  "icons": {
+    "16": "assets/icons/icon-16.png",
+    "48": "assets/icons/icon-48.png",
+    "128": "assets/icons/icon-128.png"
   }
 }

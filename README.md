@@ -1,38 +1,111 @@
-# ScrollToPrompt
+# ScrollToPrompt 🚀
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](http://makeapullrequest.com)
+[![CI](https://github.com/AhmadHassan-BTed/ScrollToPrompt/actions/workflows/ci.yml/badge.svg)](https://github.com/AhmadHassan-BTed/ScrollToPrompt/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-blue.svg)](https://www.typescriptlang.org/)
+[![Vite](https://img.shields.io/badge/Built%20with-Vite-646CFF.svg)](https://vitejs.dev/)
 
-ScrollToPrompt is a browser extension that visualizes the location of your prompts in AI chat interfaces like ChatGPT, Claude, and Gemini. It adds interactive markers to the scrollbar area, allowing you to jump back to any of your messages instantly.
+**ScrollToPrompt** is a production-grade browser extension designed to enhance the navigation experience in modern AI chat interfaces. By injecting high-performance, visual markers into the scrollbar area, it allows users to instantly locate and jump back to their previous prompts.
 
+---
 
-## Features
-- **Visual Markers**: Small, colored dots on a custom scrollbar overlay representing your prompts.
-- **Click to Navigate**: Clicking a marker smoothly scrolls the corresponding prompt into view.
-- **Platform Support**:
-  - ChatGPT (`chatgpt.com`)
-  - Claude (`claude.ai`)
-  - Gemini (`gemini.google.com`)
-- **Theme Aware**: Automatically adjusts for light and dark modes.
+## 🌟 Vision & Purpose
+In the era of long-form AI interactions, navigating through hundreds of messages can be cumbersome. ScrollToPrompt aims to provide a "Minimap-like" experience for chat history, ensuring that your context is always just one click away.
 
-## Installation (Development Mode)
-1. Clone this repository.
-2. Open Chrome and go to `chrome://extensions/`.
-3. Enable **Developer mode** (top right).
-4. Click **Load unpacked** and select the root directory of this repository.
+## ✨ Features
+- **Intelligent Detection**: Site-specific adapters for ChatGPT, Claude, and Gemini.
+- **Shadow DOM UI**: Fully isolated UI components to prevent styling conflicts with the host page.
+- **High Performance**: Optimized `MutationObserver` logic with debounced rendering.
+- **Theme Awareness**: Dynamic styling that adapts to both light and dark modes.
+- **Privacy First**: Zero data collection. All logic runs locally in your browser.
 
-## Project Structure
-- `manifest.json`: Extension configuration.
-- `src/content/`: Main logic and styles for chat pages.
-- `src/popup/`: Extension popup UI.
-- `docs/`: [Architecture](docs/architecture.md) and design documentation.
-- `.github/`: Issue and Pull Request templates.
+---
 
-## Contributing
-Contributions are what make the open-source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**. 
+## 🏗 Architecture & System Design
+The project follows a **Modular Adapter Pattern**, ensuring high cohesion and zero coupling between platform-specific logic and the core engine.
 
-Please see [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests.
+### Core Modules:
+- **`Core Engine`**: Orchestrates the detection, state management, and UI updates.
+- **`Adapters`**: Platform-specific implementations (ChatGPT, Claude, Gemini) that handle DOM selection.
+- **`UI Layer`**: A Shadow DOM-based component system for rendering markers.
+- **`Message Bus`**: (Planned) Handles communication between content scripts, background workers, and the popup.
 
-## License
-Distributed under the MIT License. See `LICENSE` for more information.
+### Folder Structure:
+```text
+src/
+├── adapters/          # Site-specific logic (Adapter Pattern)
+├── assets/            # Static assets & icons
+├── components/        # Isolated UI components (Shadow DOM)
+├── core/              # Business logic & Engine
+├── background/        # Service worker logic
+├── content/           # Content script entry points
+├── types/             # Global TypeScript definitions
+└── utils/             # Shared utility functions
+```
 
+---
+
+## 🛠 Tech Stack
+- **Languages**: TypeScript, HTML, CSS
+- **Bundler**: Vite with `@crxjs/vite-plugin`
+- **Linting**: ESLint, Prettier
+- **Testing**: Vitest
+- **CI/CD**: GitHub Actions
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+- Node.js (v18+)
+- npm / pnpm / yarn
+
+### Installation
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/AhmadHassan-BTed/ScrollToPrompt.git
+   ```
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Start the development server:
+   ```bash
+   npm run dev
+   ```
+
+### Loading into Browser
+1. Open Chrome/Brave/Edge and navigate to `chrome://extensions`.
+2. Enable **Developer Mode**.
+3. Click **Load Unpacked**.
+4. Select the `dist` folder generated by the build.
+
+---
+
+## 🧪 Development Workflow
+- **Linting**: `npm run lint`
+- **Formatting**: `npm run format`
+- **Testing**: `npm run test`
+- **Build**: `npm run build`
+
+---
+
+## 🤝 Contributing
+We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for our contribution guidelines and [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) for our community standards.
+
+## 🛡 Security
+Security is a top priority. Please refer to our [SECURITY.md](SECURITY.md) for reporting vulnerabilities.
+
+## 📄 License
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+## 🗺 Roadmap
+- [ ] Add support for Perplexity and Poe.
+- [ ] Implement customizable marker colors.
+- [ ] Add a search-to-prompt feature.
+- [ ] Support for localized prompt detection.
+
+## 👥 Maintainers
+- **Maintainer Name** - [@AhmadHassan-BTed](https://github.com/AhmadHassan-BTed)
