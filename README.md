@@ -1,6 +1,10 @@
 # ScrollToPrompt
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](http://makeapullrequest.com)
+
 ScrollToPrompt is a browser extension that visualizes the location of your prompts in AI chat interfaces like ChatGPT, Claude, and Gemini. It adds interactive markers to the scrollbar area, allowing you to jump back to any of your messages instantly.
+
 
 ## Features
 - **Visual Markers**: Small, colored dots on a custom scrollbar overlay representing your prompts.
@@ -21,11 +25,14 @@ ScrollToPrompt is a browser extension that visualizes the location of your promp
 - `manifest.json`: Extension configuration.
 - `src/content/`: Main logic and styles for chat pages.
 - `src/popup/`: Extension popup UI.
-- `icons/`: (TODO) Extension icons.
+- `docs/`: [Architecture](docs/architecture.md) and design documentation.
+- `.github/`: Issue and Pull Request templates.
 
-## Roadmap
-- [x] Initial repository structure.
-- [x] Basic prompt detection logic.
-- [x] Visual marker implementation.
-- [ ] Refined selectors for all supported platforms.
-- [ ] Customization options (marker colors, visibility, etc.).
+## Contributing
+Contributions are what make the open-source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**. 
+
+Please see [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests.
+
+## License
+Distributed under the MIT License. See `LICENSE` for more information.
+
