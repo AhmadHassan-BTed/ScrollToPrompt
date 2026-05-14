@@ -1,0 +1,52 @@
+#scroll-to-prompt-bar {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 12px;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.05);
+    z-index: 999999;
+    pointer-events: none;
+    transition: background 0.3s ease;
+}
+
+#scroll-to-prompt-bar:hover {
+    background: rgba(0, 0, 0, 0.1);
+    pointer-events: auto;
+}
+
+.prompt-marker {
+    position: absolute;
+    right: 2px;
+    width: 8px;
+    height: 4px;
+    background: #4a9eff;
+    border-radius: 2px;
+    cursor: pointer;
+    pointer-events: auto;
+    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), background 0.2s ease;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+.prompt-marker:hover {
+    transform: scaleX(1.5) scaleY(2);
+    background: #2188ff;
+    z-index: 10;
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+    #scroll-to-prompt-bar {
+        background: rgba(255, 255, 255, 0.05);
+    }
+    #scroll-to-prompt-bar:hover {
+        background: rgba(255, 255, 255, 0.1);
+    }
+    .prompt-marker {
+        background: #00e5ff;
+        box-shadow: 0 0 8px rgba(0, 229, 255, 0.4);
+    }
+    .prompt-marker:hover {
+        background: #ffffff;
+    }
+}

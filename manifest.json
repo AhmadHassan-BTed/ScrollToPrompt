@@ -1,0 +1,26 @@
+{
+  "manifest_version": 3,
+  "name": "ScrollToPrompt",
+  "version": "1.0.0",
+  "description": "Visualize your prompt locations on the scrollbar for ChatGPT, Claude, and Gemini.",
+  "permissions": ["storage"],
+  "content_scripts": [
+    {
+      "matches": [
+        "https://chatgpt.com/*",
+        "https://claude.ai/*",
+        "https://gemini.google.com/*"
+      ],
+      "js": ["src/content/index.js"],
+      "css": ["src/content/styles.css"],
+      "run_at": "document_idle"
+    }
+  ],
+  "icons": {
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "action": {
+    "default_popup": "src/popup/popup.html"
+  }
+}
