@@ -1,4 +1,4 @@
-# ScrollToPrompt 🚀
+# ScrollToPrompt 
 
 [![CI](https://github.com/AhmadHassan-BTed/ScrollToPrompt/actions/workflows/ci.yml/badge.svg)](https://github.com/AhmadHassan-BTed/ScrollToPrompt/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
@@ -9,10 +9,10 @@
 
 ---
 
-## 🌟 Vision & Purpose
+##  Vision & Purpose
 In the era of long-form AI interactions, navigating through hundreds of messages can be cumbersome. ScrollToPrompt aims to provide a "Minimap-like" experience for chat history, ensuring that your context is always just one click away.
 
-## ✨ Features
+##  Features
 - **Intelligent Detection**: Site-specific adapters for ChatGPT, Claude, and Gemini.
 - **Shadow DOM UI**: Fully isolated UI components to prevent styling conflicts with the host page.
 - **High Performance**: Optimized `MutationObserver` logic with debounced rendering.
@@ -21,7 +21,7 @@ In the era of long-form AI interactions, navigating through hundreds of messages
 
 ---
 
-## 🏗 Architecture & System Design
+##  Architecture & System Design
 The project follows a **Modular Adapter Pattern**, ensuring high cohesion and zero coupling between platform-specific logic and the core engine.
 
 ### Core Modules:
@@ -45,7 +45,7 @@ src/
 
 ---
 
-## 🛠 Tech Stack
+##  Tech Stack
 - **Languages**: TypeScript, HTML, CSS
 - **Bundler**: Vite with `@crxjs/vite-plugin`
 - **Linting**: ESLint, Prettier
@@ -54,7 +54,7 @@ src/
 
 ---
 
-## 🚀 Getting Started
+##  Getting Started
 
 ### Prerequisites
 - Node.js (v18+)
@@ -82,7 +82,7 @@ src/
 
 ---
 
-## 🧪 Development Workflow
+##  Development Workflow
 - **Linting**: `npm run lint`
 - **Formatting**: `npm run format`
 - **Testing**: `npm run test`
@@ -90,22 +90,22 @@ src/
 
 ---
 
-## 🤝 Contributing
+##  Contributing
 We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for our contribution guidelines and [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) for our community standards.
 
-## 🛡 Security
+##  Security
 Security is a top priority. Please refer to our [SECURITY.md](SECURITY.md) for reporting vulnerabilities.
 
-## 📄 License
+##  License
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
 
-## 🗺 Roadmap
+##  Roadmap
 - [ ] Add support for Perplexity and Poe.
 - [ ] Implement customizable marker colors.
 - [ ] Add a search-to-prompt feature.
 - [ ] Support for localized prompt detection.
 
-## 👥 Maintainers
+##  Maintainers
 - **Maintainer Name** - [@AhmadHassan-BTed](https://github.com/AhmadHassan-BTed)

@@ -5,7 +5,7 @@ This document describes the architectural patterns and design decisions behind *
 ## Core Philosophy
 The extension is designed to be **an evolution of the native scrollbar**. We prioritize an unobtrusive, elegant, and intelligent enhancement over a bulky minimap.
 
-## 🧱 Component Architecture
+##  Component Architecture
 
 ### 1. MarkerUI (`src/components/MarkerUI.ts`)
 This is the core renderer class.
@@ -37,11 +37,11 @@ Implemented as static classes implementing the `SiteAdapter` interface:
 - **Communication**: Queries active tabs to fetch live statistics on the number of prompts in the current conversation.
 - **Sync**: Automatically persists user preferences via `chrome.storage.sync` which hot-reloads within the content scripts.
 
-## 🛠 Engineering Decisions
+##  Engineering Decisions
 - **TypeScript & Vite**: Strict typing for robustness and Vite/CRXJS for a fast, modern build pipeline producing a Manifest V3 extension.
 - **Debounced Rendering**: Layout thrashing is eliminated by debouncing DOM scans to 120ms intervals.
 - **`requestAnimationFrame`**: Dragging and scrolling use `rAF` to guarantee smooth, 60fps movement.
 - **Reduced Motion Support**: Listens to `@media (prefers-reduced-motion: reduce)` to disable transitions for accessibility.
 
-## 🚀 Scalability
+##  Scalability
 Adding a new AI platform takes ~20 lines of code by adding a new adapter class in `Platforms.ts` and wiring it into `main.ts`.
