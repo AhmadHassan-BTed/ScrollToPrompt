@@ -1,5 +1,5 @@
-import { MarkerUI } from '../components/MarkerUI';
-import { Logger } from '../utils/Logger';
+import { MarkerUI } from "../components/MarkerUI";
+import { Logger } from "../utils/Logger";
 
 export interface SiteAdapter {
   platform: string;
@@ -22,7 +22,7 @@ export class ScrollToPromptEngine {
 
   constructor(adapter: SiteAdapter) {
     this.adapter = adapter;
-    Logger.debug('Engine constructed for adapter:', adapter.platform);
+    Logger.debug("Engine constructed for adapter:", adapter.platform);
   }
 
   public init() {
@@ -30,15 +30,18 @@ export class ScrollToPromptEngine {
     this._findContainerAndInit();
 
     // Listen for messages from popup
-    if (typeof chrome !== 'undefined' && chrome.runtime) {
+    if (typeof chrome !== "undefined" && chrome.runtime) {
       chrome.runtime.onMessage.addListener((msg, _, sendResponse) => {
-        Logger.debug('Received message in Engine:', msg);
-        if (msg.type === 'stp-toggle') {
+        Logger.debug("Received message in Engine:", msg);
+        if (msg.type === "stp-toggle") {
           if (this.ui) this.ui.toggle(msg.enabled);
         }
-        if (msg.type === 'stp-get-info') {
+        if (msg.type === "stp-get-info") {
           const prompts = this.adapter.getPrompts();
-          sendResponse({ prompts: prompts.length, platform: this.adapter.platform });
+          sendResponse({
+            prompts: prompts.length,
+            platform: this.adapter.platform,
+          });
         }
         return true;
       });
@@ -48,28 +51,30 @@ export class ScrollToPromptEngine {
   private _findContainerAndInit() {
     const ct = this.adapter.getScrollContainer();
     if (ct) {
-      Logger.debug('Scroll container found', ct);
+      Logger.debug("Scroll container found", ct);
       this._initScrollbar(ct);
     } else {
       this._containerAttempts++;
-      Logger.debug(`Scroll container not found, attempt ${this._containerAttempts}`);
+      Logger.debug(
+        `Scroll container not found, attempt ${this._containerAttempts}`,
+      );
       if (this._containerAttempts < 20) {
         setTimeout(() => this._findContainerAndInit(), 500);
       } else {
-        Logger.error('Failed to find scroll container after 20 attempts.');
+        Logger.error("Failed to find scroll container after 20 attempts.");
       }
     }
   }
 
   private _initScrollbar(container: HTMLElement) {
-    Logger.info('Initializing MarkerUI for scrollbar overlay');
+    Logger.info("Initializing MarkerUI for scrollbar overlay");
     if (this.ui) this.ui.destroy();
-    
+
     // We will initialize the MarkerUI with the target container
     this.ui = new MarkerUI(container);
     this._scan();
     this._startObserving(container);
-    
+
     if (this._pollTimer) clearInterval(this._pollTimer);
     this._pollTimer = window.setInterval(() => this._debouncedScan(), POLL_MS);
     this._watchNavigation();
@@ -77,12 +82,12 @@ export class ScrollToPromptEngine {
 
   private _scan() {
     if (!this.ui || this.ui.isDestroyed()) return;
-    
+
     const ct = this.ui.getContainer();
     const prompts = this.adapter.getPrompts();
-    
+
     if (!prompts.length) {
-      Logger.debug('No prompts found during scan');
+      Logger.debug("No prompts found during scan");
       this.ui.updateMarkers([]);
       return;
     }
@@ -91,13 +96,16 @@ export class ScrollToPromptEngine {
     const ctRect = ct.getBoundingClientRect();
     const scrollTop = ct.scrollTop;
 
-    const ratios = prompts.map(el => {
+    const ratios = prompts.map((el) => {
       const r = el.getBoundingClientRect();
       const absTop = r.top - ctRect.top + scrollTop;
       return Math.min(Math.max(absTop / scrollH, 0), 1);
     });
 
-    Logger.debug(`Scan complete. Found ${prompts.length} prompts. Updating markers...`, ratios);
+    Logger.debug(
+      `Scan complete. Found ${prompts.length} prompts. Updating markers...`,
+      ratios,
+    );
     this.ui.updateMarkers(ratios);
   }
 
@@ -113,13 +121,15 @@ export class ScrollToPromptEngine {
       this._debouncedScan();
     });
     this._observer.observe(container, { childList: true, subtree: true });
-    Logger.debug('Started observing DOM mutations on container');
+    Logger.debug("Started observing DOM mutations on container");
   }
 
   private _watchNavigation() {
     const check = () => {
       if (location.href !== this._lastUrl) {
-        Logger.info(`URL changed from ${this._lastUrl} to ${location.href}. Re-initializing...`);
+        Logger.info(
+          `URL changed from ${this._lastUrl} to ${location.href}. Re-initializing...`,
+        );
         this._lastUrl = location.href;
         this._containerAttempts = 0;
         setTimeout(() => {
@@ -131,6 +141,9 @@ export class ScrollToPromptEngine {
     };
     if (this._navObserver) this._navObserver.disconnect();
     this._navObserver = new MutationObserver(check);
-    this._navObserver.observe(document.body, { childList: true, subtree: true });
+    this._navObserver.observe(document.body, {
+      childList: true,
+      subtree: true,
+    });
   }
 }

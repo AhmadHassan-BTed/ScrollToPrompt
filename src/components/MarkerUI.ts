@@ -1,4 +1,4 @@
-import { Logger } from '../utils/Logger';
+import { Logger } from "../utils/Logger";
 
 export class MarkerUI {
   private container: HTMLElement;
@@ -8,7 +8,7 @@ export class MarkerUI {
   private thumb!: HTMLElement;
   private markerLayer!: HTMLElement;
   private nativeStyle: HTMLStyleElement | null = null;
-  
+
   private markers: { ratio: number; density: number }[] = [];
   private destroyed: boolean = false;
   private isDragging: boolean = false;
@@ -21,28 +21,30 @@ export class MarkerUI {
   // Settings
   private cfg = {
     enabled: true,
-    markerColor: '#a78bfa',
+    markerColor: "#a78bfa",
     markerOpacity: 0.45,
     scrollbarWidth: 8,
     hoverWidth: 14,
     autoHide: true,
     autoHideDelay: 1400,
-    side: 'right',
+    side: "right",
     animations: true,
-    themeSync: true
+    themeSync: true,
   };
 
   private boundOnScroll: () => void;
   private boundOnMouseMove: (e: MouseEvent) => void;
   private boundOnThemeChange: () => void;
-  private boundOnStorageChange!: (changes: { [key: string]: chrome.storage.StorageChange }) => void;
+  private boundOnStorageChange!: (changes: {
+    [key: string]: chrome.storage.StorageChange;
+  }) => void;
 
   constructor(container: HTMLElement) {
-    Logger.debug('Initializing MarkerUI for container', container);
+    Logger.debug("Initializing MarkerUI for container", container);
     this.container = container;
-    
+
     // Initialize mql before buildDOM so isDarkTheme works
-    this.mql = window.matchMedia('(prefers-color-scheme: dark)');
+    this.mql = window.matchMedia("(prefers-color-scheme: dark)");
 
     // IMPORTANT: Build the DOM synchronously so updateMarkers() doesn't fail
     // if called before the async storage.sync returns!
@@ -53,16 +55,16 @@ export class MarkerUI {
     this.show();
 
     // Load settings from storage
-    if (typeof chrome !== 'undefined' && chrome.storage) {
-      Logger.debug('Fetching settings from chrome.storage.sync');
+    if (typeof chrome !== "undefined" && chrome.storage) {
+      Logger.debug("Fetching settings from chrome.storage.sync");
       chrome.storage.sync.get(this.cfg, (data) => {
-        Logger.info('Settings loaded', data);
+        Logger.info("Settings loaded", data);
         this.cfg = { ...this.cfg, ...data };
         this.rebuild();
       });
 
       this.boundOnStorageChange = (changes) => {
-        Logger.debug('Settings changed', changes);
+        Logger.debug("Settings changed", changes);
         let changedFlag = false;
         for (const [k, { newValue }] of Object.entries(changes)) {
           if (k in this.cfg) {
@@ -76,21 +78,24 @@ export class MarkerUI {
       };
       chrome.storage.onChanged.addListener(this.boundOnStorageChange);
     } else {
-      Logger.warn('chrome.storage API not available');
+      Logger.warn("chrome.storage API not available");
     }
 
     this.bindEvents();
 
-    this.boundOnScroll = () => { this.scheduleFrame(); this.show(); };
+    this.boundOnScroll = () => {
+      this.scheduleFrame();
+      this.show();
+    };
     this.boundOnMouseMove = (e) => {
       if (this.isDragging) return;
       const fromRight = window.innerWidth - e.clientX;
       const fromLeft = e.clientX;
-      const near = this.cfg.side === 'right' ? fromRight < 40 : fromLeft < 40;
+      const near = this.cfg.side === "right" ? fromRight < 40 : fromLeft < 40;
       if (near && !this.isHovering) this.show();
     };
     this.boundOnThemeChange = () => {
-      Logger.debug('Theme changed detected from media query');
+      Logger.debug("Theme changed detected from media query");
       this.rebuild();
     };
   }
@@ -101,7 +106,10 @@ export class MarkerUI {
     const bg = getComputedStyle(document.body).backgroundColor;
     const m = bg.match(/\d+/g);
     if (m) {
-      const lum = (0.299 * parseInt(m[0]) + 0.587 * parseInt(m[1]) + 0.114 * parseInt(m[2]));
+      const lum =
+        0.299 * parseInt(m[0]) +
+        0.587 * parseInt(m[1]) +
+        0.114 * parseInt(m[2]);
       return lum < 128;
     }
     return false;
@@ -110,23 +118,23 @@ export class MarkerUI {
   private buildDOM() {
     if (this.host) return;
 
-    this.host = document.createElement('div');
-    this.host.id = 'stp-host';
-    this.shadow = this.host.attachShadow({ mode: 'closed' });
+    this.host = document.createElement("div");
+    this.host.id = "stp-host";
+    this.shadow = this.host.attachShadow({ mode: "closed" });
 
-    const style = document.createElement('style');
+    const style = document.createElement("style");
     style.textContent = this.getCSS();
     this.shadow.appendChild(style);
 
-    this.track = document.createElement('div');
-    this.track.className = `track ${this.cfg.side === 'left' ? 'left' : ''}`;
+    this.track = document.createElement("div");
+    this.track.className = `track ${this.cfg.side === "left" ? "left" : ""}`;
 
-    this.markerLayer = document.createElement('div');
-    this.markerLayer.className = 'markers';
+    this.markerLayer = document.createElement("div");
+    this.markerLayer.className = "markers";
     this.track.appendChild(this.markerLayer);
 
-    this.thumb = document.createElement('div');
-    this.thumb.className = 'thumb';
+    this.thumb = document.createElement("div");
+    this.thumb.className = "thumb";
     this.track.appendChild(this.thumb);
 
     this.shadow.appendChild(this.track);
@@ -139,8 +147,8 @@ export class MarkerUI {
     const mc = this.cfg.markerColor;
     const mo = this.cfg.markerOpacity;
     const anim = this.cfg.animations;
-    const dur = anim ? '0.25s' : '0s';
-    const durFast = anim ? '0.15s' : '0s';
+    const dur = anim ? "0.25s" : "0s";
+    const durFast = anim ? "0.15s" : "0s";
     const isDark = this.isDarkTheme();
 
     return `
@@ -162,17 +170,17 @@ export class MarkerUI {
         transition: background ${dur} ease;
       }
       .track:hover::before {
-        background: ${isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)'};
+        background: ${isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.03)"};
       }
       .thumb {
         position: absolute; right: 1px; left: 1px;
         min-height: 36px; border-radius: 9999px;
-        background: ${isDark ? 'rgba(255,255,255,0.18)' : 'rgba(0,0,0,0.18)'};
+        background: ${isDark ? "rgba(255,255,255,0.18)" : "rgba(0,0,0,0.18)"};
         transition: background ${durFast} ease;
         z-index: 3; cursor: default;
       }
       .thumb:hover, .thumb.active {
-        background: ${isDark ? 'rgba(255,255,255,0.32)' : 'rgba(0,0,0,0.32)'};
+        background: ${isDark ? "rgba(255,255,255,0.32)" : "rgba(0,0,0,0.32)"};
       }
       .markers { position: absolute; inset: 0; z-index: 1; pointer-events: none; overflow: hidden; }
       .mk {
@@ -192,11 +200,13 @@ export class MarkerUI {
 
   private hideNativeScrollbar() {
     if (this.nativeStyle) this.nativeStyle.remove();
-    this.nativeStyle = document.createElement('style');
-    this.nativeStyle.id = 'stp-hide-native';
+    this.nativeStyle = document.createElement("style");
+    this.nativeStyle.id = "stp-hide-native";
 
     const id = this.container.id ? `#${CSS.escape(this.container.id)}` : null;
-    const cls = this.container.classList.length ? `.${Array.from(this.container.classList).map(CSS.escape).join('.')}` : '';
+    const cls = this.container.classList.length
+      ? `.${Array.from(this.container.classList).map(CSS.escape).join(".")}`
+      : "";
     const sel = id || cls || this.container.tagName.toLowerCase();
 
     this.nativeStyle.textContent = `
@@ -207,66 +217,84 @@ export class MarkerUI {
   }
 
   private bindEvents() {
-    this.container.addEventListener('scroll', this.boundOnScroll, { passive: true });
-    
-    this.thumb.addEventListener('mousedown', (e) => this.startDrag(e));
-    this.track.addEventListener('mousedown', (e) => {
+    this.container.addEventListener("scroll", this.boundOnScroll, {
+      passive: true,
+    });
+
+    this.thumb.addEventListener("mousedown", (e) => this.startDrag(e));
+    this.track.addEventListener("mousedown", (e) => {
       if (e.target === this.thumb || this.isDragging) return;
       this.clickToScroll(e);
     });
 
-    this.track.addEventListener('wheel', (e) => {
-      e.preventDefault();
-      this.container.scrollBy({ top: e.deltaY, left: 0 });
-    }, { passive: false });
+    this.track.addEventListener(
+      "wheel",
+      (e) => {
+        e.preventDefault();
+        this.container.scrollBy({ top: e.deltaY, left: 0 });
+      },
+      { passive: false },
+    );
 
-    this.track.addEventListener('mouseenter', () => {
-      this.isHovering = true; this.show();
+    this.track.addEventListener("mouseenter", () => {
+      this.isHovering = true;
+      this.show();
       if (this.hideTimer) clearTimeout(this.hideTimer);
     });
-    this.track.addEventListener('mouseleave', () => {
+    this.track.addEventListener("mouseleave", () => {
       this.isHovering = false;
       if (!this.isDragging) this.scheduleHide();
     });
 
-    document.addEventListener('mousemove', this.boundOnMouseMove, { passive: true });
+    document.addEventListener("mousemove", this.boundOnMouseMove, {
+      passive: true,
+    });
 
-    this.ro = new ResizeObserver(() => { this.updateGeometry(); this.scheduleFrame(); });
+    this.ro = new ResizeObserver(() => {
+      this.updateGeometry();
+      this.scheduleFrame();
+    });
     this.ro.observe(this.container);
 
-    this.mql.addEventListener('change', this.boundOnThemeChange);
+    this.mql.addEventListener("change", this.boundOnThemeChange);
   }
 
   private startDrag(e: MouseEvent) {
-    e.preventDefault(); e.stopPropagation();
+    e.preventDefault();
+    e.stopPropagation();
     this.isDragging = true;
-    this.thumb.classList.add('active');
-    
+    this.thumb.classList.add("active");
+
     const startY = e.clientY;
     const startScroll = this.container.scrollTop;
     const trackH = this.track.getBoundingClientRect().height;
 
     const onMove = (e: MouseEvent) => {
       const dy = e.clientY - startY;
-      this.container.scrollTop = startScroll + (dy / trackH) * this.container.scrollHeight;
+      this.container.scrollTop =
+        startScroll + (dy / trackH) * this.container.scrollHeight;
     };
     const onUp = () => {
       this.isDragging = false;
-      this.thumb.classList.remove('active');
-      document.removeEventListener('mousemove', onMove);
-      document.removeEventListener('mouseup', onUp);
+      this.thumb.classList.remove("active");
+      document.removeEventListener("mousemove", onMove);
+      document.removeEventListener("mouseup", onUp);
       this.scheduleHide();
     };
-    
-    document.addEventListener('mousemove', onMove);
-    document.addEventListener('mouseup', onUp);
+
+    document.addEventListener("mousemove", onMove);
+    document.addEventListener("mouseup", onUp);
   }
 
   private clickToScroll(e: MouseEvent) {
     const rect = this.track.getBoundingClientRect();
     const ratio = (e.clientY - rect.top) / rect.height;
-    const target = ratio * (this.container.scrollHeight - this.container.clientHeight);
-    this.container.scrollTo({ top: target, behavior: this.cfg.animations ? 'smooth' : 'auto' });
+    const target =
+      ratio * (this.container.scrollHeight - this.container.clientHeight);
+    this.container.scrollTo({
+      top: target,
+      behavior: this.cfg.animations ? "smooth" : "auto",
+    });
   }
 
   private updateGeometry() {
@@ -274,26 +302,31 @@ export class MarkerUI {
     const r = this.container.getBoundingClientRect();
     this.track.style.top = `${Math.max(r.top, 0)}px`;
     this.track.style.height = `${Math.min(r.height, window.innerHeight - Math.max(r.top, 0))}px`;
-    
-    if (this.cfg.side === 'right') {
+
+    if (this.cfg.side === "right") {
       this.track.style.right = `${Math.max(window.innerWidth - r.right, 0)}px`;
-      this.track.style.left = 'auto';
+      this.track.style.left = "auto";
     } else {
       this.track.style.left = `${Math.max(r.left, 0)}px`;
-      this.track.style.right = 'auto';
+      this.track.style.right = "auto";
     }
   }
 
   private updateThumb() {
     if (!this.track || !this.thumb) return;
     const { scrollTop, scrollHeight, clientHeight } = this.container;
-    if (scrollHeight <= clientHeight) { this.track.style.opacity = '0'; return; }
+    if (scrollHeight <= clientHeight) {
+      this.track.style.opacity = "0";
+      return;
+    }
 
-    const trackH = parseFloat(this.track.style.height) || this.track.getBoundingClientRect().height;
+    const trackH =
+      parseFloat(this.track.style.height) ||
+      this.track.getBoundingClientRect().height;
     const thumbH = Math.max((clientHeight / scrollHeight) * trackH, 36);
     const maxTop = trackH - thumbH;
     const ratio = scrollTop / (scrollHeight - clientHeight);
-    
+
     this.thumb.style.height = `${thumbH}px`;
     this.thumb.style.top = `${ratio * maxTop}px`;
 
@@ -315,8 +348,8 @@ export class MarkerUI {
 
     while (existing.length > need) this.markerLayer.lastChild?.remove();
     while (existing.length < need) {
-      const mk = document.createElement('div');
-      mk.className = 'mk';
+      const mk = document.createElement("div");
+      mk.className = "mk";
       this.markerLayer.appendChild(mk);
     }
 
@@ -331,15 +364,19 @@ export class MarkerUI {
 
   private compressMarkers(ratios: number[]) {
     if (!ratios.length) return [];
-    const sorted = ratios.map(r => ({ ratio: r, density: 1 })).sort((a, b) => a.ratio - b.ratio);
-    const trackH = parseFloat(this.track?.style.height || '0') || window.innerHeight;
+    const sorted = ratios
+      .map((r) => ({ ratio: r, density: 1 }))
+      .sort((a, b) => a.ratio - b.ratio);
+    const trackH =
+      parseFloat(this.track?.style.height || "0") || window.innerHeight;
     const minGap = 4 / trackH;
 
     const out = [sorted[0]];
     for (let i = 1; i < sorted.length; i++) {
       const last = out[out.length - 1];
       if (sorted[i].ratio - last.ratio < minGap) {
-        last.ratio = (last.ratio * last.density + sorted[i].ratio) / (last.density + 1);
+        last.ratio =
+          (last.ratio * last.density + sorted[i].ratio) / (last.density + 1);
         last.density++;
       } else {
         out.push(sorted[i]);
@@ -348,21 +385,25 @@ export class MarkerUI {
     return out;
   }
 
-  private updateMarkerGlow(scrollTop: number, clientH: number, scrollH: number) {
+  private updateMarkerGlow(
+    scrollTop: number,
+    clientH: number,
+    scrollH: number,
+  ) {
     const vpTop = scrollTop / scrollH;
     const vpBot = (scrollTop + clientH) / scrollH;
     const els = this.markerLayer.children;
     for (let i = 0; i < els.length && i < this.markers.length; i++) {
       const r = this.markers[i].ratio;
       const inView = r >= vpTop - 0.02 && r <= vpBot + 0.02;
-      els[i].classList.toggle('glow', inView);
+      els[i].classList.toggle("glow", inView);
     }
   }
 
   public show() {
     if (!this.cfg.enabled || !this.track) return;
     if (this.hideTimer) clearTimeout(this.hideTimer);
-    this.track.classList.add('visible');
+    this.track.classList.add("visible");
     this.scheduleHide();
   }
 
@@ -371,18 +412,18 @@ export class MarkerUI {
     if (this.hideTimer) clearTimeout(this.hideTimer);
     this.hideTimer = window.setTimeout(() => {
       if (!this.isHovering && !this.isDragging && this.track) {
-        this.track.classList.remove('visible');
+        this.track.classList.remove("visible");
       }
     }, this.cfg.autoHideDelay);
   }
 
   private rebuild() {
     if (this.shadow) {
-      const style = this.shadow.querySelector('style');
+      const style = this.shadow.querySelector("style");
       if (style) style.textContent = this.getCSS();
     }
     if (this.track) {
-      this.track.className = `track ${this.cfg.side === 'left' ? 'left' : ''}`;
+      this.track.className = `track ${this.cfg.side === "left" ? "left" : ""}`;
     }
     this.updateGeometry();
     this.updateThumb();
@@ -390,23 +431,31 @@ export class MarkerUI {
 
   public toggle(enabled: boolean) {
     this.cfg.enabled = enabled;
-    if (this.host) this.host.style.display = enabled ? '' : 'none';
-    if (enabled) { this.updateGeometry(); this.scheduleFrame(); this.show(); }
+    if (this.host) this.host.style.display = enabled ? "" : "none";
+    if (enabled) {
+      this.updateGeometry();
+      this.scheduleFrame();
+      this.show();
+    }
   }
 
-  public getContainer() { return this.container; }
-  public isDestroyed() { return this.destroyed; }
+  public getContainer() {
+    return this.container;
+  }
+  public isDestroyed() {
+    return this.destroyed;
+  }
 
   public destroy() {
     this.destroyed = true;
     if (this.raf) cancelAnimationFrame(this.raf);
     if (this.hideTimer) clearTimeout(this.hideTimer);
-    
-    this.container.removeEventListener('scroll', this.boundOnScroll);
-    document.removeEventListener('mousemove', this.boundOnMouseMove);
-    this.mql.removeEventListener('change', this.boundOnThemeChange);
-    
-    if (typeof chrome !== 'undefined' && chrome.storage) {
+
+    this.container.removeEventListener("scroll", this.boundOnScroll);
+    document.removeEventListener("mousemove", this.boundOnMouseMove);
+    this.mql.removeEventListener("change", this.boundOnThemeChange);
+
+    if (typeof chrome !== "undefined" && chrome.storage) {
       chrome.storage.onChanged.removeListener(this.boundOnStorageChange);
     }
 
