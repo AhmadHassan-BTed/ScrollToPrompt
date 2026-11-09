@@ -116,7 +116,7 @@ export class ScrollToPromptEngine {
 
   private _startObserving(container: HTMLElement) {
     if (this._observer) this._observer.disconnect();
-    this._observer = new MutationObserver((mutations) => {
+    this._observer = new MutationObserver((_mutations) => {
       // Logger.debug('DOM Mutation detected', mutations.length); // Excluded to avoid spam
       this._debouncedScan();
     });
